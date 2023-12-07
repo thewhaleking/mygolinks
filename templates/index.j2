@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Example Page</title>
+    <style>
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 400px 40px 40px;
+            gap: 10px;
+            max-width: 600px;
+            margin: auto;
+        }
+        .button {
+            display: block;
+            width: max-content;
+            margin: 20px auto;
+        }
+        .pagination {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        .item-cell {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            border: 1px solid #ddd;
+            background-color: #f9f9f9;
+        }
+        .item-cell:nth-child(odd) {
+            background-color: #efefef;
+        }
+        .url-cell {
+            justify-content: start;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding: 10px;
+            border: 1px solid #ddd;
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    <button class="button">New+</button>
+
+    <div class="container">
+        {% for item in items %}
+            <div class="item-cell">{{ item.short }}</div>
+            <div class="url-cell">{{ item.url }}</div>
+            <div class="item-cell">✏️</div>
+            <div class="item-cell">➖</div>
+        {% endfor %}
+    </div>
+
+    <div class="pagination">
+        {% if previous_items %}
+        <button onclick="location.href='/edit?page_number={{ page_number - 1 }}'">Previous 50</button>
+        {% endif %}
+        {% if more_items %}
+        <button onclick="location.href='/edit?page_number={{ page_number + 1 }}'">Next 50</button>
+        {% endif %}
+    </div>
+</body>
+</html>
