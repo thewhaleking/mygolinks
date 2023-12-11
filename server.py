@@ -1,7 +1,7 @@
 import sqlite3
-import validators
 
 from flask import Flask, render_template, redirect, url_for, request, jsonify, make_response, g
+import validators
 
 
 def connect_db():
