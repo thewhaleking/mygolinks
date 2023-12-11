@@ -1,4 +1,6 @@
 import sqlite3
+import validators
+
 from flask import Flask, render_template, redirect, url_for, request, jsonify, make_response, g
 
 
@@ -15,6 +17,7 @@ def table_creation():
     cursor = conn.cursor()
     create_table_query = '''
     CREATE TABLE IF NOT EXISTS links (
+        id INTEGER PRIMARY KEY,
         short VARCHAR(255),
         url VARCHAR(255)
     )
@@ -30,6 +33,14 @@ def create_app():
 
     @app.get("/edit")
     def edit_get():
+        if request.args.get("api", ""):
+            return edit_api(request)
+
+        return render_template(
+            "index.j2"
+        )
+
+    def edit_api(request_):
         def query(page_number):
             conn = connect_db()
             cursor = conn.cursor()
@@ -43,36 +54,60 @@ def create_app():
             previous_items_ = True if page_number > 1 else False
             return items_, more_items_, previous_items_
 
-        page_number_ = int(request.args.get("page_number", 1)) or 1
-        items, more_items, previous_items = query(page_number_)
-        return render_template(
-            "index.j2",
-            items=items,
-            more_items=more_items,
-            previous_items=previous_items,
-            page_number=page_number_
+        if request_.args.get("api", "") == "fetch":
+            page_number_ = int(request.args.get("page", 1)) or 1
+            items, more_items, previous_items = query(page_number_)
+            return make_response(jsonify(
+                {
+                    "items": [{"short": x["short"], "url": x["url"], "id": x["id"]} for x in items],
+                    "moreItems": more_items,
+                    "previousItems": previous_items,
+                    "page": page_number_
+                }
+            ))
+
+    @app.put("/edit")
+    def edit_put():
+        conn = connect_db()
+        r = request.get_json()
+        cursor = conn.cursor()
+        cursor.execute(
+            "UPDATE links SET short = ?, url = ? WHERE id = ?",
+            (r.get("short"), r.get("url"), r.get("id"))
         )
+        conn.commit()
+        return make_response({}, 200)
+
+    @app.delete("/edit")
+    def edit_delete():
+        conn = connect_db()
+        r = request.get_json()
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM links WHERE id = ?", (r.get("id"),))
+        conn.commit()
+        return make_response({}, 200)
 
     @app.post("/edit")
     def edit_post():
         conn = connect_db()
         r = request.get_json()
         cursor = conn.cursor()
-        short = r.get('short')
+        short = str(r.get('short')).lower()
         url = r.get('url')
         if not any([short, url]):
             return make_response(jsonify({"data": "Missing fields"}), 400)
+        if not validators.url(url):
+            return make_response(jsonify({"data": "Invalid URL"}), 400)
         e = cursor.execute("SELECT * FROM links WHERE short = ?", (short,)).fetchone()
         if e:
-            response = (jsonify({"data": "That links already exists"}), 400)
+            return make_response(jsonify({"data": "That links already exists"}), 400)
         else:
             cursor.execute(
                 "INSERT INTO links (short, url) VALUES (?, ?)",
                 (short, url)
             )
             conn.commit()
-            response = (jsonify({"data": f"{short}"}), 200)
-        return make_response(*response)
+            return make_response(jsonify({"data": f"{short}"}), 200)
 
     @app.get("/<string:short>")
     def goto(short):
@@ -82,8 +117,8 @@ def create_app():
             "SELECT url FROM links WHERE short = ?",
             (short,)
         ).fetchone()
-        if url := url_fetch.get("url"):
-            return redirect(url)
+        if url_fetch:
+            return redirect(url_fetch["url"])
         else:
             return redirect(url_for('edit_get'))
 
