@@ -14,6 +14,8 @@ Because there's no authentication for this, it is highly recommended that you ru
 
 Once it's running and you have a domain name (or IP address) for it, 
 you simply need to add a custom search engine to Google Chrome:
+![](https://github.com/thewhaleking/mygolinks/blob/main/installation/golinks.gif)
+
 1. Go to [Chrome Settings -> Search Engines](chrome://settings/searchEngines)
 2. Beside "Site Search", click "Add"
 3. Add the following:
