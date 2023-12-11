@@ -96,8 +96,8 @@ async function fetchData(page) {
             () => {
                 const shortText = eid(`short-${rowId}`).innerText;
                 const urlText = eid(`url-${rowId}`).innerText;
-                eid(`short-${rowId}`).innerHTML = `<input style="width: 180px;" id="updateShort-${rowId}" value="${shortText}">`;
-                eid(`url-${rowId}`).innerHTML = `<input style="width: 380px;" id="updateURL-${rowId}" value="${urlText}">`;
+                eid(`short-${rowId}`).innerHTML = `<input style="width: 160px;" id="updateShort-${rowId}" value="${shortText}">`;
+                eid(`url-${rowId}`).innerHTML = `<input style="width: 360px;" id="updateURL-${rowId}" value="${urlText}">`;
                 eid(`edit-${rowId}`).style.display = "none";
                 eid(`save-${rowId}`).style.display = "block";
             }
