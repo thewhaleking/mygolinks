@@ -71,12 +71,14 @@ def create_app():
         conn = connect_db()
         r = request.get_json()
         cursor = conn.cursor()
+        if not all([short := r.get("short"), validators.url(url := r.get("url")), id_ := r.get("id")]):
+            return make_response(jsonify({"data": f"Invalid: {short} | {url}"}), 400)
         cursor.execute(
             "UPDATE links SET short = ?, url = ? WHERE id = ?",
-            (r.get("short"), r.get("url"), r.get("id"))
+            (short, url, id_)
         )
         conn.commit()
-        return make_response({}, 200)
+        return make_response(jsonify({"data": f"Updated successfully: {short} | {url}"}), 200)
 
     @app.delete("/edit")
     def edit_delete():
@@ -85,7 +87,7 @@ def create_app():
         cursor = conn.cursor()
         cursor.execute("DELETE FROM links WHERE id = ?", (r.get("id"),))
         conn.commit()
-        return make_response({}, 200)
+        return make_response(jsonify({"data": "Row successfully deleted"}), 200)
 
     @app.post("/edit")
     def edit_post():
@@ -100,7 +102,7 @@ def create_app():
             return make_response(jsonify({"data": "Invalid URL"}), 400)
         e = cursor.execute("SELECT * FROM links WHERE short = ?", (short,)).fetchone()
         if e:
-            return make_response(jsonify({"data": "That links already exists"}), 400)
+            return make_response(jsonify({"data": "That link already exists"}), 400)
         else:
             cursor.execute(
                 "INSERT INTO links (short, url) VALUES (?, ?)",

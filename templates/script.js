@@ -29,19 +29,50 @@
     }
 
     function deleteRow(rowId) {
-        try {
-            fetch(
-                "/edit",
-                {
-                    method: "DELETE",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({id: rowId})
-                }
-            ).then(() => fetchData(pageNumber));
-        } catch (e) {
-            console.log(`Error deleting row ${rowId}: ${e}`);
+        // Get the modal
+        const modal = document.getElementById("confirmationModal");
+
+        // Get the elements that can close the modal
+        const closeButton = document.getElementsByClassName("close-button")[0];
+        const cancelButton = document.getElementById("cancelButton");
+        const confirmButton = document.getElementById("confirmButton");
+        const short = document.getElementById(`short-${rowId}`).innerText;
+        document.getElementById("deleteConfirmMsg").innerText = `This will remove the entry for ${short}.`
+        modal.style.display = "block"
+        // When the user clicks on (x) or "Cancel", close the modal
+        closeButton.addEventListener(
+            "click",
+            () => modal.style.display = "none"
+        )
+
+        cancelButton.addEventListener(
+            "click",
+            () => modal.style.display = "none"
+        )
+
+        // When the user clicks on "Confirm", perform the action and close the modal
+        confirmButton.onclick = function() {
+          try {
+              fetch(
+                  "/edit",
+                  {
+                      method: "DELETE",
+                      headers: {
+                          "Content-Type": "application/json"
+                      },
+                      body: JSON.stringify({id: rowId})
+                  }).then(() => fetchData(pageNumber));
+          } catch (e) {
+              console.log(`Error deleting row ${rowId}: ${e}`);
+          }
+
+          modal.style.display = "none";
+        }
+        
+        window.onclick = function(event) {
+          if (event.target === modal) {
+            modal.style.display = "none";
+          }
         }
     }
 
