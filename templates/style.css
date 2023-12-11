@@ -1,0 +1,84 @@
+.container {
+    display: grid;
+    grid-template-columns: 1fr 400px 40px 40px;
+    gap: 10px;
+    max-width: 700px;
+    margin: auto;
+}
+.addContainer {
+    display: grid;
+    grid-template-columns: 200px 400px 40px;
+    gap: 10px;
+    max-width: 700px;
+    margin: auto;
+    justify-items: left;
+}
+.button {
+    display: block;
+    width: max-content;
+    margin: 20px auto;
+}
+.pagination {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+.add-cell {
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    padding-bottom: 10px;
+}
+.item-cell {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+    border: 1px solid #ddd;
+    background-color: #f9f9f9;
+}
+.item-cell:nth-child(odd) {
+    background-color: #efefef;
+}
+.url-cell {
+    justify-content: start;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 10px;
+    border: 1px solid #ddd;
+    background-color: #f9f9f9;
+}
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgb(0,0,0);
+    background-color: rgba(0,0,0,0.4);
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+}
+
+.close-button {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close-button:hover,
+.close-button:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
