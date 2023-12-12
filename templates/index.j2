@@ -24,13 +24,19 @@
             <p id="errorMsg"></p>
         </div>
     </div>
-    <button id="newButton" class="button">New+</button>
+    <div style="padding-bottom: 10px; padding-top: 10px;">
+        <label for="filter"></label>
+        <input id="filter" type="text">
+        <button id="filterButton">Filter</button>
+        <button id="newButton" style="float: right;">New+</button>
+    </div>
+
     <div style="display: none" id="addContainer" class="addContainer">
         <div class="add-cell"><label for="short">Short Name</label></div>
         <div class="add-cell"><label for="url">URL</label></div>
         <div class="add-cell"></div>
-        <div class="add-cell"><input id="short" style="width: 180px;" type="text" name="short"></div>
-        <div class="add-cell"><input id="url" type="url" style="width: 380px;" name="url"></div>
+        <div class="add-cell"><input id="short" style="width: 100px;" type="text" name="short"></div>
+        <div class="add-cell"><input id="url" type="url" style="width: 300px;" name="url"></div>
         <div class="add-cell"><button id="addLinkButton">Add</button></div>
     </div>
 
@@ -38,8 +44,8 @@
     </div>
 
     <div class="pagination">
-        <button id="previousItems" style="display: none" onclick="fetchData(pageNumber - 1)">Previous 50</button>
-        <button id="moreItems" style="display: none" onclick="fetchData(pageNumber + 1)">Next 50</button>
+        <button id="previousItems" class="pageButton" style="display: none" onclick="fetchData(pageNumber - 1)">Previous 50</button>
+        <button id="moreItems" class="pageButton" style="display: none" onclick="fetchData(pageNumber + 1)">Next 50</button>
     </div>
 </body>
 <script>

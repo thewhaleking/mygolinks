@@ -41,22 +41,38 @@ def create_app():
         )
 
     def edit_api(request_):
-        def query(page_number):
+        def query(page_number, filter_text):
             conn = connect_db()
             cursor = conn.cursor()
+
             page_size = 50
-            cursor.execute("SELECT COUNT(*) FROM links")
+            filter_params = [f"%{filter_text}%", f"%{filter_text}%"]
+            filter_query = "WHERE short LIKE ? OR url LIKE ? "
+
+            count_query = "SELECT COUNT(*) FROM links "
+            full_count_query = count_query + filter_query if filter_text else count_query
+            count_params = filter_params if filter_text else []
+
+            cursor.execute(full_count_query, count_params)
             total_items = cursor.fetchone()['COUNT(*)']
             offset = (page_number - 1) * page_size
-            cursor.execute("SELECT * FROM links LIMIT 50 OFFSET ?", (offset,))
+
+            sq1 = "SELECT * FROM links "
+            sq2 = "LIMIT ? OFFSET ?"
+            selection_params = [page_size, offset]
+            full_selection_query = sq1 + filter_query + sq2 if filter_text else sq1 + sq2
+            full_selection_params = filter_params + selection_params if filter_text else selection_params
+
+            cursor.execute(full_selection_query, full_selection_params)
             items_ = cursor.fetchall()
             more_items_ = True if (total_items > len(items_) + (offset * page_size)) else False
             previous_items_ = True if page_number > 1 else False
+
             return items_, more_items_, previous_items_
 
         if request_.args.get("api", "") == "fetch":
             page_number_ = int(request.args.get("page", 1)) or 1
-            items, more_items, previous_items = query(page_number_)
+            items, more_items, previous_items = query(page_number_, request.args.get("filter"))
             return make_response(jsonify(
                 {
                     "items": [{"short": x["short"], "url": x["url"], "id": x["id"]} for x in items],

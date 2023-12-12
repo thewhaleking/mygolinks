@@ -8,6 +8,7 @@ const prevNumbersButton = eid("previousItems");
 const moreNumbersButton = eid("moreItems");
 
 let pageNumber = 1;
+let filterText;
 
 
 function showError(errorMessage) {
@@ -100,7 +101,7 @@ function deleteRow(rowId) {
     }
 }
 
-function fetchData(page) {
+function fetchData(page, filterText) {
     function generateDivs(row) {
         return `
             <div id="short-${row.id}" class="item-cell">${row.short}</div>
@@ -138,7 +139,8 @@ function fetchData(page) {
     }
 
     let pageValue = page || 1;
-    let url = `/edit?api=fetch&page=${pageValue}`
+    let filterValue = filterText || '';
+    let url = `/edit?api=fetch&page=${pageValue}&filter=${filterValue}`;
 
     try {
         fetch(url).then(
@@ -210,6 +212,14 @@ eid("addLinkButton").addEventListener(
             }
         }
         addItem();
+    }
+)
+
+eid("filterButton").addEventListener(
+    "click",
+    () => {
+        filterText = eid("filter").value;
+        fetchData(pageNumber, filterText);
     }
 )
 
