@@ -8,14 +8,29 @@ const prevNumbersButton = eid("previousItems");
 const moreNumbersButton = eid("moreItems");
 
 let pageNumber = 1;
-let moreNumbers = false;
-let previousNumbers = false;
+
+
+function showError(errorMessage) {
+    eid("errorMsg").innerText = errorMessage;
+    eid("errorModal").style.display = "block";
+    eid("errorCloseButton").addEventListener(
+    "click",
+    () => eid("errorModal").style.display = "none"
+    );
+    const modal = eid("errorModal");
+    // also close modal when user clicks outside the modal
+    window.onclick = function(event) {
+      if (event.target === modal) {
+        modal.style.display = "none";
+      }
+    }
+}
 
 function editRow(rowId) {
     try {
         const short = eid(`updateShort-${rowId}`).value;
         const url = eid(`updateURL-${rowId}`).value;
-        const response =  fetch(
+        fetch(
             "/edit",
             {
                 method: "PUT",
@@ -24,24 +39,31 @@ function editRow(rowId) {
                 },
                 body: JSON.stringify({short: short, url: url, id: rowId}),
             }
-        ).then(() => fetchData(pageNumber));
+        ).then(
+            (response) => {
+                if (response.status === 400) {
+                    response.json().then(
+                        (result) => {
+                            showError(result.data);
+                        })
+                } else {
+                    fetchData(pageNumber);
+                }
+        });
     } catch (e) {
-        console.log(`Error updating ${rowId}: ${e}`);
+        showError(e);
     }
 }
 
 function deleteRow(rowId) {
-    // Get the modal
     const modal = eid("confirmationModal");
-
-    // Get the elements that can close the modal
-    const closeButton = document.getElementsByClassName("close-button")[0];
+    const closeButton = eid("closeButton");
     const cancelButton = eid("cancelButton");
     const confirmButton = eid("confirmButton");
     const short = eid(`short-${rowId}`).innerText;
     eid("deleteConfirmMsg").innerText = `This will remove the entry for ${short}.`
     modal.style.display = "block"
-    // When the user clicks on (x) or "Cancel", close the modal
+
     closeButton.addEventListener(
         "click",
         () => modal.style.display = "none"
@@ -52,7 +74,6 @@ function deleteRow(rowId) {
         () => modal.style.display = "none"
     )
 
-    // When the user clicks on "Confirm", perform the action and close the modal
     confirmButton.onclick = function() {
       try {
           fetch(
@@ -65,12 +86,13 @@ function deleteRow(rowId) {
                   body: JSON.stringify({id: rowId})
               }).then(() => fetchData(pageNumber));
       } catch (e) {
-          console.log(`Error deleting row ${rowId}: ${e}`);
+          showError(`Error deleting row ${rowId}: ${e}`);
       }
 
       modal.style.display = "none";
     }
-    
+
+    // also close modal when user clicks outside the modal
     window.onclick = function(event) {
       if (event.target === modal) {
         modal.style.display = "none";
@@ -78,16 +100,17 @@ function deleteRow(rowId) {
     }
 }
 
-async function fetchData(page) {
+function fetchData(page) {
     function generateDivs(row) {
         return `
-        <div id="short-${row.id}" class="item-cell">${row.short}</div>
-        <div id="url-${row.id}" class="url-cell">${row.url}</div>
-        <div class="item-cell">
-            <div id="edit-${row.id}" style="display: block">✏️</div>
-            <div id="save-${row.id}" style="display: none">✅</div>
-        </div>
-        <div id="delete-${row.id}" class="item-cell">➖</div>`
+            <div id="short-${row.id}" class="item-cell">${row.short}</div>
+            <div id="url-${row.id}" class="url-cell">${row.url}</div>
+            <div class="item-cell">
+                <div id="edit-${row.id}" style="display: block">✏️</div>
+                <div id="save-${row.id}" style="display: none">✅</div>
+            </div>
+            <div id="delete-${row.id}" class="item-cell">➖</div>
+        `
     }
 
     function addHandlers(rowId) {
@@ -118,34 +141,24 @@ async function fetchData(page) {
     let url = `/edit?api=fetch&page=${pageValue}`
 
     try {
-        const response = await fetch(
-            url,
-            {
-                method: "GET",
-            }
+        fetch(url).then(
+            (response) => response.json().then(
+                (result) => {
+                 gridContainer.innerHTML = result.items.map(generateDivs).join("");
+                 result.items.forEach(
+                     (x) => addHandlers(x.id)
+                 );
+                 pageNumber = result["page"];
+                 if (result["moreItems"]) moreNumbersButton.style.display = "block";
+                 else moreNumbersButton.style.display = "none";
+                 if (result["previousItems"]) prevNumbersButton.style.display = "block";
+                 else prevNumbersButton.style.display = "none";
+                }
+             )
         );
-        const result = await response.json();
-        gridContainer.innerHTML = result.items.map(generateDivs).join("");
-        result.items.forEach(
-            (x) => addHandlers(x.id)
-        );
-        moreNumbers = result.moreItems;
-        previousNumbers = result.previousItems;
-        pageNumber = result.page;
     }
     catch (e) {
-        console.log(`Error: ${e}`);
-    } finally {
-        if (moreNumbers) {
-            moreNumbersButton.style.display = "block";
-        } else {
-            moreNumbersButton.style.display = "none";
-        }
-        if (previousNumbers) {
-            prevNumbersButton.style.display = "block";
-        } else {
-            prevNumbersButton.style.display = "none";
-        }
+        showError(e);
     }
 }
 
@@ -166,9 +179,9 @@ eid("addLinkButton").addEventListener(
         const short = shortSelector.value;
         const url = urlSelector.value;
 
-        async function addItem() {
+        function addItem() {
             try {
-                const response = await fetch(
+                fetch(
                     "/edit",
                     {
                         method: "POST",
@@ -177,16 +190,23 @@ eid("addLinkButton").addEventListener(
                         },
                         body: JSON.stringify({short: short, url: url}),
                     }
-                );
-                const result = await response.json();
-                console.log("Success:", result);
-                shortSelector.value = '';
-                urlSelector.value = '';
-                addContainer.style.display = 'none';
-                await fetchData(pageNumber);
+                ).then((response) => {
+                    if (response.status === 200) {
+                        shortSelector.value = '';
+                        urlSelector.value = '';
+                        addContainer.style.display = 'none';
+                        fetchData(pageNumber);
+                    } else {
+                        response.json().then(
+                            (result) => {
+                                showError(result.data)
+                            }
+                        )
+                    }
+                });
             }
             catch (error) {
-                console.error("Error:", error);
+                showError(error);
             }
         }
         addItem();
