@@ -4,7 +4,7 @@ const eid = (elementId) => {
         click: function (func) {
             this.el.addEventListener(
                 "click",
-                () => func()
+                func
             );
         },
         enter: function (func) {
@@ -14,46 +14,65 @@ const eid = (elementId) => {
                     if (e.key === "Enter") func()
                 }
             )
+        },
+        getValue: function () {
+            return this.el.value;
+        },
+        setValue: function (value) {
+            this.el.value = value;
+        },
+        show: function (type)  {
+            this.el.style.display = type || "block";
+        },
+        hide: function () {
+            this.el.style.display = "none";
+        },
+        isVisible: function () {
+            return (this.el.style.display === '' || this.el.style.display !== "none");
+        },
+        setHTML: function (value) {
+            this.el.innerHTML = value;
+        },
+        setText: function (value) {
+            this.el.innerText = value;
         }
     }
 }
 
-const shortSelector = eid("short").el;
-const urlSelector = eid("url").el;
-const addContainer = eid("addContainer").el;
-const gridContainer = eid("gridContainer").el;
-const prevNumbersButton = eid("previousItems").el;
-const moreNumbersButton = eid("moreItems").el;
+const shortSelector = eid("short");
+const urlSelector = eid("url");
+const addContainer = eid("addContainer");
+const gridContainer = eid("gridContainer");
+const prevNumbersButton = eid("previousItems");
+const moreNumbersButton = eid("moreItems");
 
 let pageNumber = 1;
-let filterText;
 
 
 function showError(errorMessage) {
-    eid("errorMsg").el.innerText = errorMessage;
-    eid("errorModal").el.style.display = "block";
+    const modal = eid("errorModal");
+    eid("errorMsg").setText(errorMessage);
+    eid("errorModal").show();
     eid("errorCloseButton").click(
-        () => eid("errorModal").el.style.display = "none"
+        () => modal.hide()
     );
-    const modal = eid("errorModal").el;
     // also close modal when user clicks outside the modal
     window.onclick = function(event) {
-      if (event.target === modal) {
-        modal.style.display = "none";
+      if (event.target === modal.el) {
+          modal.hide();
       }
     }
 }
 
 function runFilter(){
-    filterText = eid("filter").el.value;
-    fetchData(pageNumber, filterText);
+    fetchData(pageNumber, eid("filter").getValue());
 }
 
 
 function editRow(rowId) {
     try {
-        const short = eid(`updateShort-${rowId}`).el.value;
-        const url = eid(`updateURL-${rowId}`).el.value;
+        const short = eid(`updateShort-${rowId}`).getValue();
+        const url = eid(`updateURL-${rowId}`).getValue();
         fetch(
             "/edit",
             {
@@ -80,20 +99,20 @@ function editRow(rowId) {
 }
 
 function deleteRow(rowId) {
-    const modal = eid("confirmationModal").el;
+    const modal = eid("confirmationModal");
     const closeButton = eid("closeButton");
     const cancelButton = eid("cancelButton");
     const confirmButton = eid("confirmButton");
     const short = eid(`short-${rowId}`).el.innerText;
-    eid("deleteConfirmMsg").el.innerText = `This will remove the entry for ${short}.`
-    modal.style.display = "block"
+    eid("deleteConfirmMsg").setText(`This will remove the entry for ${short}.`);
+    modal.show();
 
     closeButton.click(
-        () => modal.style.display = "none"
+        () => modal.hide()
     )
 
     cancelButton.click(
-        () => modal.style.display = "none"
+        () => modal.hide()
     )
 
     confirmButton.click(
@@ -112,14 +131,14 @@ function deleteRow(rowId) {
               showError(`Error deleting row ${rowId}: ${e}`);
           }
 
-          modal.style.display = "none";
+          modal.hide();
         }
     )
 
     // also close modal when user clicks outside the modal
     window.onclick = function(event) {
-      if (event.target === modal) {
-        modal.style.display = "none";
+      if (event.target === modal.el) {
+          modal.hide()
       }
     }
 }
@@ -142,10 +161,10 @@ function fetchData(page, filterText) {
             () => {
                 const shortText = eid(`short-${rowId}`).el.innerText;
                 const urlText = eid(`url-${rowId}`).el.innerText;
-                eid(`short-${rowId}`).el.innerHTML = `<input style="width: 160px;" id="updateShort-${rowId}" value="${shortText}">`;
-                eid(`url-${rowId}`).el.innerHTML = `<input style="width: 360px;" id="updateURL-${rowId}" value="${urlText}">`;
-                eid(`edit-${rowId}`).el.style.display = "none";
-                eid(`save-${rowId}`).el.style.display = "block";
+                eid(`short-${rowId}`).setHTML(`<input style="width: 160px;" id="updateShort-${rowId}" value="${shortText}">`);
+                eid(`url-${rowId}`).setHTML(`<input style="width: 360px;" id="updateURL-${rowId}" value="${urlText}">`);
+                eid(`edit-${rowId}`).hide();
+                eid(`save-${rowId}`).show();
                 eid(`short-${rowId}`).enter(
                     () => editRow(rowId)
                 );
@@ -170,15 +189,15 @@ function fetchData(page, filterText) {
         fetch(url).then(
             (response) => response.json().then(
                 (result) => {
-                 gridContainer.innerHTML = result.items.map(generateDivs).join("");
+                 gridContainer.setHTML(result.items.map(generateDivs).join(""));
                  result.items.forEach(
                      (x) => addHandlers(x.id)
                  );
                  pageNumber = result["page"];
-                 if (result["moreItems"]) moreNumbersButton.style.display = "block";
-                 else moreNumbersButton.style.display = "none";
-                 if (result["previousItems"]) prevNumbersButton.style.display = "block";
-                 else prevNumbersButton.style.display = "none";
+                 if (result["moreItems"]) moreNumbersButton.show();
+                 else moreNumbersButton.hide();
+                 if (result["previousItems"]) prevNumbersButton.show();
+                 else prevNumbersButton.hide();
                 }
              )
         );
@@ -190,10 +209,10 @@ function fetchData(page, filterText) {
 
 eid("newButton").click(
     () => {
-        if (addContainer.style.display === "grid") {
-            addContainer.style.display = "none";
+        if (addContainer.isVisible()) {
+            addContainer.hide();
         } else {
-            addContainer.style.display = "grid";
+            addContainer.show("grid");
         }
     }
 )
@@ -216,9 +235,9 @@ eid("addLinkButton").click(
                     }
                 ).then((response) => {
                     if (response.status === 200) {
-                        shortSelector.value = '';
-                        urlSelector.value = '';
-                        addContainer.style.display = 'none';
+                        shortSelector.setValue('');
+                        urlSelector.setValue('');
+                        addContainer.hide();
                         fetchData(pageNumber);
                     } else {
                         response.json().then(
