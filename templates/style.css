@@ -91,4 +91,5 @@ html {
 body {
     display: table-cell;
     vertical-align: middle;
+    font-family: "Helvetica Neue", Verdana, sans-serif;
 }
