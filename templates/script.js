@@ -39,12 +39,6 @@ const eid = (elementId) => {
     }
 }
 
-const shortSelector = eid("short");
-const urlSelector = eid("url");
-const addContainer = eid("addContainer");
-const gridContainer = eid("gridContainer");
-const prevNumbersButton = eid("previousItems");
-const moreNumbersButton = eid("moreItems");
 
 let pageNumber = 1;
 
@@ -189,15 +183,19 @@ function fetchData(page, filterText) {
         fetch(url).then(
             (response) => response.json().then(
                 (result) => {
-                 gridContainer.setHTML(result.items.map(generateDivs).join(""));
+                 eid("gridContainer").setHTML(result.items.map(generateDivs).join(""));
                  result.items.forEach(
                      (x) => addHandlers(x.id)
                  );
                  pageNumber = result["page"];
-                 if (result["moreItems"]) moreNumbersButton.show();
-                 else moreNumbersButton.hide();
-                 if (result["previousItems"]) prevNumbersButton.show();
-                 else prevNumbersButton.hide();
+
+                 const prevItems = eid("previousItems");
+                 const moreItems = eid("moreItems");
+
+                 if (result["moreItems"]) moreItems.show();
+                 else moreItems.hide();
+                 if (result["previousItems"]) prevItems.show();
+                 else prevItems.hide();
                 }
              )
         );
@@ -209,6 +207,7 @@ function fetchData(page, filterText) {
 
 eid("newButton").click(
     () => {
+        const addContainer = eid("addContainer");
         if (addContainer.isVisible()) {
             addContainer.hide();
         } else {
@@ -219,8 +218,8 @@ eid("newButton").click(
 
 eid("addLinkButton").click(
     () => {
-        const short = shortSelector.value;
-        const url = urlSelector.value;
+        const short = eid("short").getValue();
+        const url = eid("url").getValue();
 
         function addItem() {
             try {
@@ -235,8 +234,9 @@ eid("addLinkButton").click(
                     }
                 ).then((response) => {
                     if (response.status === 200) {
-                        shortSelector.setValue('');
-                        urlSelector.setValue('');
+                        const addContainer = eid("addContainer");
+                        eid("short").setValue('');
+                        eid("url").setValue('');
                         addContainer.hide();
                         fetchData(pageNumber);
                     } else {
