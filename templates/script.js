@@ -1,24 +1,41 @@
-const eid = (elementId) => document.getElementById(elementId);
+const eid = (elementId) => {
+    return {
+        el: document.getElementById(elementId),
+        click: function (func) {
+            this.el.addEventListener(
+                "click",
+                () => func()
+            );
+        },
+        enter: function (func) {
+            this.el.addEventListener(
+                "keydown",
+                (e) => {
+                    if (e.key === "Enter") func()
+                }
+            )
+        }
+    }
+}
 
-const shortSelector = eid("short");
-const urlSelector = eid("url");
-const addContainer = eid("addContainer")
-const gridContainer = eid("gridContainer");
-const prevNumbersButton = eid("previousItems");
-const moreNumbersButton = eid("moreItems");
+const shortSelector = eid("short").el;
+const urlSelector = eid("url").el;
+const addContainer = eid("addContainer").el;
+const gridContainer = eid("gridContainer").el;
+const prevNumbersButton = eid("previousItems").el;
+const moreNumbersButton = eid("moreItems").el;
 
 let pageNumber = 1;
 let filterText;
 
 
 function showError(errorMessage) {
-    eid("errorMsg").innerText = errorMessage;
-    eid("errorModal").style.display = "block";
-    eid("errorCloseButton").addEventListener(
-    "click",
-    () => eid("errorModal").style.display = "none"
+    eid("errorMsg").el.innerText = errorMessage;
+    eid("errorModal").el.style.display = "block";
+    eid("errorCloseButton").click(
+        () => eid("errorModal").el.style.display = "none"
     );
-    const modal = eid("errorModal");
+    const modal = eid("errorModal").el;
     // also close modal when user clicks outside the modal
     window.onclick = function(event) {
       if (event.target === modal) {
@@ -27,10 +44,16 @@ function showError(errorMessage) {
     }
 }
 
+function runFilter(){
+    filterText = eid("filter").el.value;
+    fetchData(pageNumber, filterText);
+}
+
+
 function editRow(rowId) {
     try {
-        const short = eid(`updateShort-${rowId}`).value;
-        const url = eid(`updateURL-${rowId}`).value;
+        const short = eid(`updateShort-${rowId}`).el.value;
+        const url = eid(`updateURL-${rowId}`).el.value;
         fetch(
             "/edit",
             {
@@ -57,41 +80,41 @@ function editRow(rowId) {
 }
 
 function deleteRow(rowId) {
-    const modal = eid("confirmationModal");
+    const modal = eid("confirmationModal").el;
     const closeButton = eid("closeButton");
     const cancelButton = eid("cancelButton");
     const confirmButton = eid("confirmButton");
-    const short = eid(`short-${rowId}`).innerText;
-    eid("deleteConfirmMsg").innerText = `This will remove the entry for ${short}.`
+    const short = eid(`short-${rowId}`).el.innerText;
+    eid("deleteConfirmMsg").el.innerText = `This will remove the entry for ${short}.`
     modal.style.display = "block"
 
-    closeButton.addEventListener(
-        "click",
+    closeButton.click(
         () => modal.style.display = "none"
     )
 
-    cancelButton.addEventListener(
-        "click",
+    cancelButton.click(
         () => modal.style.display = "none"
     )
 
-    confirmButton.onclick = function() {
-      try {
-          fetch(
-              "/edit",
-              {
-                  method: "DELETE",
-                  headers: {
-                      "Content-Type": "application/json"
-                  },
-                  body: JSON.stringify({id: rowId})
-              }).then(() => fetchData(pageNumber));
-      } catch (e) {
-          showError(`Error deleting row ${rowId}: ${e}`);
-      }
+    confirmButton.click(
+        () => {
+          try {
+              fetch(
+                  "/edit",
+                  {
+                      method: "DELETE",
+                      headers: {
+                          "Content-Type": "application/json"
+                      },
+                      body: JSON.stringify({id: rowId})
+                  }).then(() => fetchData(pageNumber));
+          } catch (e) {
+              showError(`Error deleting row ${rowId}: ${e}`);
+          }
 
-      modal.style.display = "none";
-    }
+          modal.style.display = "none";
+        }
+    )
 
     // also close modal when user clicks outside the modal
     window.onclick = function(event) {
@@ -115,26 +138,27 @@ function fetchData(page, filterText) {
     }
 
     function addHandlers(rowId) {
-        eid(`edit-${rowId}`).addEventListener(
-            "click",
+        eid(`edit-${rowId}`).click(
             () => {
-                const shortText = eid(`short-${rowId}`).innerText;
-                const urlText = eid(`url-${rowId}`).innerText;
-                eid(`short-${rowId}`).innerHTML = `<input style="width: 160px;" id="updateShort-${rowId}" value="${shortText}">`;
-                eid(`url-${rowId}`).innerHTML = `<input style="width: 360px;" id="updateURL-${rowId}" value="${urlText}">`;
-                eid(`edit-${rowId}`).style.display = "none";
-                eid(`save-${rowId}`).style.display = "block";
+                const shortText = eid(`short-${rowId}`).el.innerText;
+                const urlText = eid(`url-${rowId}`).el.innerText;
+                eid(`short-${rowId}`).el.innerHTML = `<input style="width: 160px;" id="updateShort-${rowId}" value="${shortText}">`;
+                eid(`url-${rowId}`).el.innerHTML = `<input style="width: 360px;" id="updateURL-${rowId}" value="${urlText}">`;
+                eid(`edit-${rowId}`).el.style.display = "none";
+                eid(`save-${rowId}`).el.style.display = "block";
+                eid(`short-${rowId}`).enter(
+                    () => editRow(rowId)
+                );
+                eid(`url-${rowId}`).enter(
+                    () => editRow(rowId)
+                );
             }
         )
-        eid(`save-${rowId}`).addEventListener(
-            "click",
+        eid(`save-${rowId}`).click(
             () => editRow(rowId)
         )
-        eid(`delete-${rowId}`).addEventListener(
-            "click",
-            () => {
-                deleteRow(rowId);
-            }
+        eid(`delete-${rowId}`).click(
+            () => deleteRow(rowId)
         )
     }
 
@@ -164,8 +188,7 @@ function fetchData(page, filterText) {
     }
 }
 
-eid("newButton").addEventListener(
-    "click",
+eid("newButton").click(
     () => {
         if (addContainer.style.display === "grid") {
             addContainer.style.display = "none";
@@ -173,10 +196,9 @@ eid("newButton").addEventListener(
             addContainer.style.display = "grid";
         }
     }
-);
+)
 
-eid("addLinkButton").addEventListener(
-    "click",
+eid("addLinkButton").click(
     () => {
         const short = shortSelector.value;
         const url = urlSelector.value;
@@ -215,12 +237,7 @@ eid("addLinkButton").addEventListener(
     }
 )
 
-eid("filterButton").addEventListener(
-    "click",
-    () => {
-        filterText = eid("filter").value;
-        fetchData(pageNumber, filterText);
-    }
-)
+eid("filterButton").click(runFilter);
+eid("filter").enter(runFilter);
 
 fetchData(pageNumber);
