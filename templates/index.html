@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Go Links</title>
+    <link rel="stylesheet" type="text/css" href="/static/style.css"/>
+</head>
+<body>
+<div id="confirmationModal" class="modal">
+    <div class="modal-content">
+        <span id="closeButton" class="close-button">&times;</span>
+        <p id="deleteConfirmMsg"></p>
+        <p>Are you sure you want to perform this action?</p>
+        <button id="confirmButton">Confirm</button>
+        <button id="cancelButton">Cancel</button>
+    </div>
+</div>
+<div id="errorModal" class="modal">
+    <div class="modal-content">
+        <span id="errorCloseButton" class="close-button">&times;</span>
+        <p>An error has occurred:</p>
+        <p id="errorMsg"></p>
+    </div>
+</div>
+<div style="padding-bottom: 10px; padding-top: 10px;">
+    <label for="filter"></label>
+    <input id="filter" type="text">
+    <button id="filterButton">Filter</button>
+    <button id="newButton" style="float: right;">New+</button>
+</div>
+
+<div style="display: none" id="addContainer" class="addContainer">
+    <div class="add-cell"><label for="short">Short Name</label></div>
+    <div class="add-cell"><label for="url">URL</label></div>
+    <div class="add-cell"></div>
+    <div class="add-cell"><input id="short" style="width: 100px;" type="text" name="short"></div>
+    <div class="add-cell"><input id="url" type="url" style="width: 300px;" name="url"></div>
+    <div class="add-cell">
+        <button id="addLinkButton">Add</button>
+    </div>
+</div>
+
+<div class="container" id="gridContainer">
+</div>
+
+<div class="pagination">
+    <button id="previousItems" class="pageButton" style="display: none" onclick="fetchData(pageNumber - 1)">Previous
+        50
+    </button>
+    <button id="moreItems" class="pageButton" style="display: none" onclick="fetchData(pageNumber + 1)">Next 50</button>
+</div>
+</body>
+<script src="/static/script.js"></script>
+</html>

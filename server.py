@@ -28,7 +28,7 @@ def table_creation():
 
 
 def create_app():
-    app = Flask(__name__)
+    app = Flask(__name__, static_url_path="/static/", static_folder="static/")
     table_creation()  # Ensures table is created if it does not already exist
 
     @app.get("/edit")
@@ -37,7 +37,7 @@ def create_app():
             return edit_api(request)
 
         return render_template(
-            "index.j2"
+            "index.html"
         )
 
     def edit_api(request_):
